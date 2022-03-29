@@ -1,0 +1,11 @@
+GDAL
+matplotlib
+numpy
+opencv_python
+pandas
+Pillow
+rasterio
+scikit_learn
+scipy
+torch
+torchvision
