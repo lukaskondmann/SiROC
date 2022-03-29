@@ -1,130 +1,8 @@
 import numpy as np
-import glob
-import os
-print(os.getcwd())
 from matplotlib.image import imread
 import matplotlib.pyplot as plt
-from sklearn.metrics import precision_recall_curve,precision_score,recall_score, auc
-from sklearn.metrics import auc,cohen_kappa_score,f1_score,accuracy_score,classification_report,recall_score,precision_score
-import pickle
-import pandas as pd 
+from sklearn.metrics import classification_report
 import torch
-
-def evaluate_change_map(change_map, label, threshold):
-    '''
-    Input: Change Map, Threshold
-    Output: Overall accuracy, In-class accuracy.
-
-    This function takes a change map as input, maps the change map into change/no change based on the threshold
-    and evaluates this based on the ground truth. Class labels are 2 (change) and 1 (no change) to be comparable with ONERA labels.'''
-
-    # Average CM across RGB
-    change_map = change_map.data
-    label = label.data
-    change_map = np.average(change_map, axis=2)
-
-    # Apply threshold
-    change_class = np.zeros_like(change_map)
-    change_class[abs(change_map) > threshold] = 2
-    change_class[abs(change_map) <= threshold] = 1
-    assert change_class.all() != 0
-
-    scores = get_accuracy(change_class, label)
-    return scores
-
-
-def call_voting_parameters(dataset_source,morph_opening,ensemble,mp_start):
-    voting_threshold = 0.5
-    if dataset_source == 'Onera':
-        if morph_opening == True:
-            otsu_factor = 1
-            voting_threshold= 0.5
-        else: 
-            if ensemble == True:
-               voting_threshold = 0.35 
-               otsu_factor = 0.75
-            else:
-                otsu_factor = 0.65
-    elif dataset_source == 'Beirut':
-        if morph_opening == True:
-            otsu_factor = 0.8
-            voting_threshold= 0.5
-            if mp_start == 10:
-               otsu_factor = 1 
-        else: 
-            if ensemble == True:
-               voting_threshold = 0.35 
-               otsu_factor = 0.75
-            else:
-                otsu_factor = 0.7
-                
-    #elif dataset_source == 'California':
-     #   mp_start,mp_stop,mp_step = 3,4,1
-    elif dataset_source == 'Alpine':
-        if morph_opening == True:
-            otsu_factor = 1.8
-            voting_threshold= 0.5
-        else: 
-            if ensemble == True:
-               voting_threshold = 0.5
-               otsu_factor = 1.7
-            else:
-                otsu_factor = 1.7
-    elif dataset_source == 'Barrax':
-        if morph_opening == True:
-            otsu_factor = 1
-            voting_threshold= 0.5
-        else: 
-            if ensemble == True:
-               voting_threshold = 0.5 
-               otsu_factor = 0.95
-            else:
-                otsu_factor = 1
-
-    elif dataset_source == 'DEN':
-        if morph_opening == True:
-            otsu_factor = 1
-            voting_threshold= 0.2
-        else: 
-            if ensemble == True:
-               voting_threshold = 0.5 
-               otsu_factor = 0.95
-            else:
-                otsu_factor = 1            
-    
-    else:
-        print('Invalid data source')
-        
-    return voting_threshold,otsu_factor
-
-
-def get_pixel_predictions(x, y, pre, padded_pre, padded_post, post_pred, bands=3, neighborhood=2, excluded=0, lamb=0):
-    '''This function models a pixel (x,y) based on the pixel values of its neighborhood with a linear regression in t-1
-    and obtains predictions for the same pixel (x,y) in t based on the surrounding pixels in t and the coefficients
-    of the regression. By default, the center pixel is not used for the regression and further pixels can be exluded by
-    setting excluded > 0. Neighborhood determines how many pixels are used for the regression and excluded how many levels
-    of neighborhood to the center are excluded (e.g excluded = 1 => 8 directly adjacent pixels to center are not used)
-    '''
-
-    # Get patch of relevant pixels
-    patch = np.array(padded_pre[x:x + 1 + 2 * neighborhood, y:y + 1 + 2 * neighborhood, :])
-    # Make center pixel zero (don't use label)
-    patch[patch.shape[0] - neighborhood - excluded - 1:patch.shape[0] - neighborhood + excluded,
-    patch.shape[0] - neighborhood - excluded - 1:patch.shape[0] - neighborhood + excluded, :] = 0
-    # Iterate over bands
-    for band in np.arange(bands):
-        # Obtain coefficients
-        end = patch[:, :, band].reshape(1, patch.shape[0] * patch.shape[1])
-        dep = pre[x, y, band].reshape(1, -1)
-        # coeff = np.linalg.lstsq(end , dep, rcond=None)[0]
-        coeff = np.linalg.lstsq(end + lamb * np.identity(end.shape[0]), dep, rcond=None)[0]
-        # Get prediction of new pixel
-        patch_post = np.array(padded_post[x:x + 1 + 2 * neighborhood, y:y + 1 + 2 * neighborhood, band])
-        prediction = np.sum(np.multiply(patch_post.reshape(patch_post.shape[0] * patch_post.shape[1], 1),
-                                        coeff))  # This returns the same as the statsmodels sm.OLS function
-
-        # Save prediction in new_array
-        post_pred[x, y, band] = prediction
 
 
 def get_accuracy(change, label):
@@ -174,3 +52,53 @@ def plot_confidence_scores(change_map,splits,voting_threshold,label,out_title):
     plt.savefig('Plots/Confidence/Confidence_Performance'+str(out_title.capitalize())+'.pdf')
     plt.show()
 
+
+def call_voting_parameters(dataset_source,morph_opening,ensemble,mp_start):
+    voting_threshold = 0.5
+    if dataset_source == 'Onera':
+        if morph_opening == True:
+            otsu_factor = 1
+            voting_threshold= 0.5
+        else: 
+            if ensemble == True:
+               voting_threshold = 0.35 
+               otsu_factor = 0.75
+            else:
+                otsu_factor = 0.65
+    elif dataset_source == 'Beirut':
+        if morph_opening == True:
+            otsu_factor = 0.8
+            voting_threshold= 0.5
+            if mp_start == 10:
+               otsu_factor = 1 
+        else: 
+            if ensemble == True:
+               voting_threshold = 0.35 
+               otsu_factor = 0.75
+            else:
+                otsu_factor = 0.7
+                
+    elif dataset_source == 'Alpine':
+        if morph_opening == True:
+            otsu_factor = 1.8
+            voting_threshold= 0.5
+        else: 
+            if ensemble == True:
+               voting_threshold = 0.5
+               otsu_factor = 1.7
+            else:
+                otsu_factor = 1.7
+    elif dataset_source == 'Barrax':
+        if morph_opening == True:
+            otsu_factor = 1
+            voting_threshold= 0.5
+        else: 
+            if ensemble == True:
+               voting_threshold = 0.5 
+               otsu_factor = 0.95
+            else:
+                otsu_factor = 1
+    else:
+        print('Invalid data source')
+        
+    return voting_threshold,otsu_factor

@@ -37,14 +37,9 @@ def main():
     make_deterministic(10)
     #device = torch.device('cuda:{}'.format(0) if torch.cuda.is_available() else 'cpu')
     plot = False 
-    sample = False
-    p = 0.2
-    #searches = 1
-    #for _ in range(searches):
-    ensemble = True
-    majority_voting = True  
-    morph_opening = True
-    profile = True
+    ensemble = False
+    majority_voting = False  
+    morph_opening = False
     plot_heatmap = False
     plot_confidence = False
     report_city_level = False
@@ -88,16 +83,16 @@ def main():
                 for j in change_map:
                     apply_threshold(change_map,j,threshold,l,otsu_factor)
                     if morph_opening == True:
-                        if profile == True: 
-                            morph_profile = torch.zeros_like(change_map[l,:,:])
-                            for kernel in range(mp_start,mp_stop,mp_step):
-                                opening = torch.tensor(cv2.morphologyEx(np.uint8(change_map[l,:,:].squeeze().numpy()), cv2.MORPH_CLOSE,np.ones((kernel,kernel),np.uint8)))
-                                morph_filter = torch.tensor(cv2.morphologyEx(np.uint8(opening), cv2.MORPH_OPEN,np.ones((kernel,kernel),np.uint8)))
-                                morph_profile += morph_filter
-                            change_map[l,:,:] = morph_profile/math.ceil(((mp_stop-mp_start)/mp_step))
-                        else: 
-                            change_map[l,:,:] = torch.tensor(cv2.morphologyEx(np.uint8(change_map[l,:,:].squeeze().numpy()), cv2.MORPH_CLOSE,np.ones((close_x,close_y),np.uint8)))
-                            change_map[l,:,:] = torch.tensor(cv2.morphologyEx(np.uint8(change_map[l,:,:].squeeze().numpy()), cv2.MORPH_OPEN,np.ones((open_x,open_y),np.uint8)))
+                        #if profile == True: 
+                        morph_profile = torch.zeros_like(change_map[l,:,:])
+                        for kernel in range(mp_start,mp_stop,mp_step):
+                            opening = torch.tensor(cv2.morphologyEx(np.uint8(change_map[l,:,:].squeeze().numpy()), cv2.MORPH_CLOSE,np.ones((kernel,kernel),np.uint8)))
+                            morph_filter = torch.tensor(cv2.morphologyEx(np.uint8(opening), cv2.MORPH_OPEN,np.ones((kernel,kernel),np.uint8)))
+                            morph_profile += morph_filter
+                        change_map[l,:,:] = morph_profile/math.ceil(((mp_stop-mp_start)/mp_step))
+                        #else: 
+                            #change_map[l,:,:] = torch.tensor(cv2.morphologyEx(np.uint8(change_map[l,:,:].squeeze().numpy()), cv2.MORPH_CLOSE,np.ones((close_x,close_y),np.uint8)))
+                            #change_map[l,:,:] = torch.tensor(cv2.morphologyEx(np.uint8(change_map[l,:,:].squeeze().numpy()), cv2.MORPH_OPEN,np.ones((open_x,open_y),np.uint8)))
                            
                     l += 1
                     
@@ -136,7 +131,7 @@ def main():
             
         if ensemble == False:
             ex = exclusion
-            change_map = obtain_change_map(pre_img, post_img, neighborhood=neighborhood,excluded=exclusion,sample=sample,p=p)
+            change_map = obtain_change_map(pre_img, post_img, neighborhood=max_neighborhood,excluded=exclusion)
             change_map = torch.squeeze(change_map.mean(dim=1))    
             
             
