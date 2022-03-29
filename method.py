@@ -64,6 +64,7 @@ def obtain_change_map(pre, post, neighborhood, excluded=0, lamb=1e-5,sample=Fals
     return change_map
 
 
+
 def apply_threshold(change_map,j,threshold,l,otsu_factor):
     if threshold == 'Otsu':
         img = np.int8(np.array(j*255).ravel())
@@ -84,6 +85,7 @@ def apply_threshold(change_map,j,threshold,l,otsu_factor):
         assert threshold in ['Otsu','Triangle','Gaussian'], "Thresholding not identified"
     return change_map
 
+'''
 def get_conv(neighborhood,excluded,device):
     sum_conv = torch.nn.Conv2d(3, 1, neighborhood*2,
                                padding=0,
@@ -94,10 +96,11 @@ def get_conv(neighborhood,excluded,device):
     delta = neighborhood - excluded
     sum_conv.weight.data[:, :, delta:-delta, delta:-delta] = 0.0
     return sum_conv
-
+'''
+'''
 def obtain_change_map_conv(pre, post, neighborhood, sum_conv):
-    '''This function gets the change map for a pair of pre/post input images
-    Predictions at the edges are zero-padded, i.e. only pixels inside the original pre image matter.'''
+    #This function gets the change map for a pair of pre/post input images
+    #Predictions at the edges are zero-padded, i.e. only pixels inside the original pre image matter.
     #get post shapen
 
     pre = pre.cuda(non_blocking=True)
@@ -119,3 +122,4 @@ def obtain_change_map_conv(pre, post, neighborhood, sum_conv):
         change_map = preds - post
 
     return change_map.cpu()
+'''

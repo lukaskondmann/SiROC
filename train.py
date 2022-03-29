@@ -72,6 +72,7 @@ def main():
         if ensemble == True:
             neighborhood,ex = split_neighborhood_uniform(max_neighborhood,splits,exclusion)[0]
             change_map = obtain_change_map(pre_img, post_img, neighborhood=neighborhood,excluded=ex,sample=sample,p=p)
+
             for neighborhood,ex in split_neighborhood_uniform(max_neighborhood,splits,exclusion)[1:]:
                 change_map =torch.cat((change_map,obtain_change_map(pre_img, post_img, neighborhood=neighborhood,excluded=ex,sample=sample,p=p)),dim=0) 
         
@@ -180,17 +181,14 @@ def main():
             plt.show()
                 
     
-        acc, change_acc, no_change_acc,TP,TN,FP,FN = get_accuracy(change_map.numpy(),label.reshape(label.shape[2],label.shape[3]).numpy())
+        #acc, change_acc, no_change_acc,TP,TN,FP,FN = get_accuracy(change_map.numpy(),label.reshape(label.shape[2],label.shape[3]).numpy())
+        TP,TN,FP,FN = get_accuracy(change_map.numpy(),label.reshape(label.shape[2],label.shape[3]).numpy())
         
         if report_city_level == True:
-            if i in [6,7] and locations == 'test.txt':
-                if i == 6:
-                    print('Dubai')
-                elif i == 7:
-                    print('Las Vegas')
-                print('Sentivitity/Recall:',TP/(TP+FN))   
-                print('Specificity',TN/(TN+FP))  
-                print('Precision',TP/(TP+FP)) 
+            print('City Number:',i)
+            print('Sentivitity/Recall:',TP/(TP+FN))   
+            print('Specificity',TN/(TN+FP))  
+            print('Precision',TP/(TP+FP)) 
         
         # update total numbers with current city
         TP_tot+=TP
