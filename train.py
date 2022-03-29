@@ -16,7 +16,7 @@ import cv2
 
 
 # ----------
-#  Run Method
+#  Run SiROC
 # ----------
 def main():
     locations = 'test.txt' # Either "train.txt" or "test.txt"
@@ -71,10 +71,10 @@ def main():
             
         if ensemble == True:
             neighborhood,ex = split_neighborhood_uniform(max_neighborhood,splits,exclusion)[0]
-            change_map = obtain_change_map(pre_img, post_img, neighborhood=neighborhood,excluded=ex,sample=sample,p=p)
+            change_map = obtain_change_map(pre_img, post_img, neighborhood=neighborhood,excluded=ex)
 
             for neighborhood,ex in split_neighborhood_uniform(max_neighborhood,splits,exclusion)[1:]:
-                change_map =torch.cat((change_map,obtain_change_map(pre_img, post_img, neighborhood=neighborhood,excluded=ex,sample=sample,p=p)),dim=0) 
+                change_map =torch.cat((change_map,obtain_change_map(pre_img, post_img, neighborhood=neighborhood,excluded=ex)),dim=0) 
         
             # Take absolute value of change signal
             change_map = torch.abs(change_map)
