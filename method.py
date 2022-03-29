@@ -1,6 +1,8 @@
 import torch
 import numpy as np
+import cv2
 
+ 
 
 def obtain_change_map(pre, post, neighborhood, excluded=0, lamb=1e-5,sample=False,p=0.1):
     '''This function gets the change map for a pair of pre/post input images
@@ -61,6 +63,26 @@ def obtain_change_map(pre, post, neighborhood, excluded=0, lamb=1e-5,sample=Fals
     #print ('change map shape', change_map.shape)
     return change_map
 
+
+def apply_threshold(change_map,j,threshold,l,otsu_factor):
+    if threshold == 'Otsu':
+        img = np.int8(np.array(j*255).ravel())
+        assert np.isnan(img).any() == False
+        t= cv2.threshold(np.array(abs(j.numpy()* 255), dtype = np.uint8),0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)[0]
+        change_map[l,:,:] = torch.where(abs(j) > (t*otsu_factor/255), torch.tensor(1), torch.tensor(0))
+    elif threshold == 'Triangle':
+        t= cv2.threshold(np.array(abs(j.numpy()* 255), dtype = np.uint8),0,255,cv2.THRESH_BINARY+cv2.THRESH_TRIANGLE )[0]
+        change_map[l,:,:] = torch.where(abs(j) > (t*0.5*otsu_factor/255), torch.tensor(1), torch.tensor(0))
+    elif threshold == 'Gaussian':
+        img = np.int8(np.array(j*255).ravel())
+        assert np.isnan(img).any() == False, "NaNs in array"
+        gmm = GaussianMixture(n_components = 2)
+        gmm = gmm.fit(X=np.expand_dims(img,1))
+        t = np.mean(gmm.means_)
+        change_map[l,:,:] = torch.where(abs(j) > (t/255), torch.tensor(1), torch.tensor(0))
+    else:
+        assert threshold in ['Otsu','Triangle','Gaussian'], "Thresholding not identified"
+    return change_map
 
 def get_conv(neighborhood,excluded,device):
     sum_conv = torch.nn.Conv2d(3, 1, neighborhood*2,
