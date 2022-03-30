@@ -1,5 +1,7 @@
 # SiROC - Spatial Context Awareness for Unsupervised Change Detection in Optical Satellite Images
 
+Implementation of the IEEE TGRS paper [Spatial Context Awareness for Unsupervised Change Detection in Optical Satellite Images]( https://ieeexplore.ieee.org/document/9627707) by Kondmann et al. (2021)
+
 ## Abstract
 Detecting changes on the ground in multitemporal Earth observation data is one of the key problems in remote sensing. 
 In this paper, we introduce Sibling Regression for Optical Change detection (SiROC), an unsupervised method for change 
@@ -17,6 +19,14 @@ on four datasets. Besides accurate predictions without the need for training, Si
 Get the OSCD dataset from [IEEE Dataport](https://ieee-dataport.org/open-access/oscd-onera-satellite-change-detection). 
 Unfortunately, we do not have permission to share the three smaller datasets involved in the paper as we do not own them. 
 
+## Requirements 
+
+```
+pip install -U -r requirements.txt
+```
+## Evaluation of SiROC
+
+Once you downloaded the OSCD dataset, adjust data_path and out_dir in train.py and simply run it. Parameters are set to the paper defaults.
 
 ## Reference  
 
