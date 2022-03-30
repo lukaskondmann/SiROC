@@ -17,7 +17,7 @@ import os
 # ----------
 def main():
     locations = 'test.txt' # Either "train.txt" or "test.txt"
-    dataset_source = 'Alpine'
+    dataset_source = 'Onera'
     data_path = '/localhome/kond_lu/' # Adjust accordingly
     out_dir = '/localhome/kond_lu/SiROC/Plots/' # Only necessary for plot options
 
@@ -49,9 +49,9 @@ def main():
     voting_threshold,otsu_factor = call_voting_parameters(dataset_source,morph_operations,ensemble,mp_start)
 
     # Plotting Options 
-    plot = True   
-    plot_heatmap = True
-    plot_confidence = True
+    plot = False   
+    plot_heatmap = False
+    plot_confidence = False
     report_city_level = False
     if plot == True:
         os.makedirs(out_dir+'Change_Maps/',exist_ok=True)

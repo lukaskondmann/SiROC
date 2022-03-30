@@ -1,6 +1,4 @@
 import numpy as np
-import cv2
-from scipy.ndimage import distance_transform_edt
 import random
 import torch
 

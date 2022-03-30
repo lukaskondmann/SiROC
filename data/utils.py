@@ -2,10 +2,8 @@ import os
 import numpy as np
 import cv2
 from matplotlib import pyplot
-from PIL import Image
 import torch
 from torchvision import transforms
-from PIL import Image
 from data.custom_transforms import ToTensor, Resize
 from data.helper_transforms import *
 

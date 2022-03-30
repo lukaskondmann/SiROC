@@ -1,8 +1,6 @@
-import random
 import cv2
 import numpy as np
 import torch
-from torchvision import transforms
 
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
