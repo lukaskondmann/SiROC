@@ -17,7 +17,7 @@ import os
 # ----------
 def main():
     locations = 'test.txt' # Either "train.txt" or "test.txt"
-    dataset_source = 'Onera'
+    dataset_source = 'Alpine'
     data_path = '/localhome/kond_lu/' # Adjust accordingly
     out_dir = '/localhome/kond_lu/SiROC/Plots/' # Only necessary for plot options
 
@@ -35,6 +35,7 @@ def main():
 
     print('Load datasets from {}: train_set={}'.format('ONERA', len(train_data)))
 
+    # Fix seeds everywhere
     make_deterministic(10)
     
     # Parameters 
@@ -65,13 +66,16 @@ def main():
     print(threshold)
     c = time.time()
     TP_tot,TN_tot,FP_tot,FN_tot = 0,0,0,0
+    
+    # Iterate over different locations 
     for i, (batch, title) in enumerate(train_loader):
         out_title = ''.join([x for x in str(title) if x in string.ascii_letters])
         pre_img, post_img, label = batch['pre'], batch['post'], batch['gt']
         label = torch.where(label > torch.mean(label), torch.tensor(1), torch.tensor(0))
         assert label.max() == 1, "No Changing Pixels in the labels"
         assert label.min() == 0, "Only Changing Pixels in the labels"
-            
+
+        # Iterate over mutually exclusive neighborhoods    
         if ensemble == True:
             neighborhood,ex = split_neighborhood_uniform(max_neighborhood,splits,exclusion)[0]
             change_map = obtain_change_map(pre_img, post_img, neighborhood=neighborhood,excluded=ex)
@@ -115,7 +119,8 @@ def main():
                 plot_confidence_scores(change_map,splits,voting_threshold,label,out_title,out_dir)
                 
             change_map = torch.where(abs(change_map) >= (voting_threshold), torch.tensor(1), torch.tensor(0))
-            
+
+        # No ensembling, just one large neighborhood     
         if ensemble == False:
             ex = exclusion
             change_map = obtain_change_map(pre_img, post_img, neighborhood=max_neighborhood,excluded=exclusion)
@@ -127,9 +132,7 @@ def main():
             
             t= cv2.threshold(np.array(abs(change_map.numpy()* 255), dtype = np.uint8),0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)[0]
             change_map = torch.where(abs(change_map) > (t*otsu_factor/255), torch.tensor(1), torch.tensor(0))
-            #if morph_operations == True:
-                #change_map = torch.tensor(cv2.morphologyEx(np.uint8(change_map.squeeze().numpy()), cv2.MORPH_CLOSE,np.ones((close_x,close_y),np.uint8)))
-                #change_map = torch.tensor(cv2.morphologyEx(np.uint8(change_map.squeeze().numpy()), cv2.MORPH_OPEN,np.ones((close_x,close_y),np.uint8)))
+
             if morph_operations == True:
                 morph_profile = torch.zeros_like(change_map)
                 for kernel in range(mp_start,mp_stop,mp_step):
@@ -181,6 +184,8 @@ def main():
         
         if dataset_source == 'Barrax' or dataset_source == 'Alpine':
             print(out_title.capitalize())
+            # This is necessary because we treat different input images (e.g NIR & SWIR) as different locations here
+            # If we didn't do this, the reported results would be an average of SiROC for two different channel combinations
             print('Resetting positive and negative counts because its not different locations, just different inputs')
             recall = TP/(TP+FN)
             specificity = TN/(TN+FP)

@@ -31,6 +31,7 @@ class ONERA(torch.utils.data.Dataset):
                     post_img.append(images_path[1])
                     lab = np.sort(os.listdir(os.path.join(root, 'TrainLabels', line.strip(), 'cm')))
                     lab_path = list(map(lambda x: os.path.join('TrainLabels', line.strip(), 'cm', x), lab))
+                    lab_path = [x for x in lab_path if 'cm.png' in x] # Remove irrelevant entries
                     labels.append(lab_path[0])
                     img_list.append(line.strip())
 
@@ -42,6 +43,7 @@ class ONERA(torch.utils.data.Dataset):
                     post_img.append(images_path[1])
                     lab = np.sort(os.listdir(os.path.join(root, 'TestLabels', line.strip(), 'cm')))
                     lab_path = list(map(lambda x: os.path.join('TestLabels', line.strip(), 'cm', x), lab))
+                    lab_path = [x for x in lab_path if 'cm.png' in x] # Remove irrelevant entries
                     labels.append(lab_path[0])
                     img_list.append(line.strip())
 

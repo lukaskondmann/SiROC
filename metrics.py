@@ -31,7 +31,7 @@ def split_neighborhood_uniform(neighborhood,splits,excluded):
 def plot_confidence_scores(change_map,splits,voting_threshold,label,out_title,out_dir):
     ''' This function plots the Precision of the classification as a function
     of the confidence in the predictions. If the uncertainties are well
-    calibrated, this should be increasing.    
+    calibrated, this should be increasing. Also works well with e.g. F1 scores.
     '''
     change_map_sum = torch.round(change_map * splits)
     confidence = torch.abs(change_map_sum - torch.round(torch.tensor(splits/2)))
