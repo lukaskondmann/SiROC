@@ -48,15 +48,18 @@ def main():
     voting_threshold,otsu_factor = call_voting_parameters(dataset_source,morph_operations,ensemble,mp_start)
 
     # Plotting Options 
-    plot = False   
-    plot_heatmap = False
-    plot_confidence = False
+    plot = True   
+    plot_heatmap = True
+    plot_confidence = True
     report_city_level = False
     if plot == True:
         os.makedirs(out_dir+'Change_Maps/',exist_ok=True)
+        os.makedirs(out_dir+'Labels/',exist_ok=True)
+    if plot_heatmap == True:
+        os.makedirs(out_dir+'Heatmaps/',exist_ok=True)
+    if plot_confidence == True:
+        os.makedirs(out_dir+'Confidence/',exist_ok=True)
 
-    #print(max_neighborhood,exclusion,splits,mp_start)
-    
     assert max_neighborhood > splits, "Maximum for split is the number of rows/columns in the neighborhood"
     
     print(threshold)
@@ -106,12 +109,11 @@ def main():
                 plt.imshow(change_map.numpy())
                 plt.axis('off')
                 #plt.savefig('Plots/Heatmaps/'+dataset_source+'_Confidence_Heatmap_'+str(out_title.capitalize())+'.pdf', bbox_inches='tight')
-                #plt.imsave('Plots/Heatmaps/'+dataset_source+'_Confidence_Heatmap_'+str(out_title.capitalize())+'.pdf',change_map.numpy())
+                plt.imsave(out_dir+'Heatmaps/'+dataset_source+'_Confidence_Heatmap_'+str(out_title.capitalize())+'.png',change_map.numpy())
                 plt.show()
             if plot_confidence == True:
-                plot_confidence_scores(change_map,splits,voting_threshold,label,out_title)
+                plot_confidence_scores(change_map,splits,voting_threshold,label,out_title,out_dir)
                 
-            
             change_map = torch.where(abs(change_map) >= (voting_threshold), torch.tensor(1), torch.tensor(0))
             
         if ensemble == False:
@@ -136,26 +138,21 @@ def main():
                     morph_profile += morph_filter
                 change_map = morph_profile/math.ceil(((mp_stop-mp_start)/mp_step))
                 
-    
-        print('Shape of Change Map',change_map.shape)
-        print('Shape of Labels',label.shape)
+        print(f"Finished {out_title.capitalize()} with shape {change_map.shape}")
 
         if plot == True: 
             plt.imshow(change_map.numpy(),cmap='gray')
             plt.axis('off')
             plt.title('Final Change Map')
-            #plt.imsave('Plots/Change_Maps/'+dataset_source+'_Change_Map_'+str(out_title.capitalize())+'_MP='+str(morph_operations)+'.pdf',change_map.numpy(),cmap='gray')
-            #plt.imsave('Plots/Change_Maps/'+dataset_source+'_Change_Map_'+str(out_title.capitalize())+'_MP='+str(morph_operations)+'.pdf',change_map.numpy(),cmap='gray')
+            plt.imsave(out_dir+'Change_Maps/'+dataset_source+'_Change_Map_'+str(out_title.capitalize())+'_MP='+str(morph_operations)+'.png',change_map.numpy(),cmap='gray')
             plt.show()
             
             plt.imshow(torch.squeeze(label).numpy(),cmap='gray')
             plt.axis('off')
             plt.title('Labels')
-            #plt.imsave('Plots/Labels/'+dataset_source+'_Labels_'+str(out_title.capitalize())+'.pdf',torch.squeeze(label).numpy(),cmap='gray')
+            plt.imsave(out_dir+'Labels/'+dataset_source+'_Labels_'+str(out_title.capitalize())+'.png',torch.squeeze(label).numpy(),cmap='gray')
             plt.show()
         
-        
-            print(pre_img.shape)
             pre_RGB = cv2.cvtColor(torch.squeeze(pre_img).permute(1, 2, 0).numpy(), cv2.COLOR_BGR2RGB)
             post_RGB = cv2.cvtColor(torch.squeeze(post_img).permute(1, 2, 0).numpy(), cv2.COLOR_BGR2RGB)
             plt.imshow(pre_RGB)

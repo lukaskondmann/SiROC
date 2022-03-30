@@ -28,7 +28,7 @@ def split_neighborhood_uniform(neighborhood,splits,excluded):
         splitted_neighborhoods.append((local_neighborhood,exclusion))
     return splitted_neighborhoods 
 
-def plot_confidence_scores(change_map,splits,voting_threshold,label,out_title):
+def plot_confidence_scores(change_map,splits,voting_threshold,label,out_title,out_dir):
     ''' This function plots the Precision of the classification as a function
     of the confidence in the predictions. If the uncertainties are well
     calibrated, this should be increasing.    
@@ -44,12 +44,12 @@ def plot_confidence_scores(change_map,splits,voting_threshold,label,out_title):
         precision,recall = report['1']['precision'], report['1']['recall']
         confidence_scores.append((precision,recall))
     precision = [x[0] for x in confidence_scores]
+    plt.close()
     plt.scatter(range(int(torch.max(confidence))),precision)
     plt.xlabel('Model Confidence')
     plt.ylabel('Precision')
-    #plt.title('Confidence-Performance Curve' + ' ' +str(out_title.capitalize()))
     plt.title('Confidence-Performance Curve')
-    plt.savefig('Plots/Confidence/Confidence_Performance'+str(out_title.capitalize())+'.pdf')
+    plt.savefig(out_dir+'Confidence/Confidence_Performance'+str(out_title.capitalize())+'.png')
     plt.show()
 
 
