@@ -25,7 +25,7 @@ To use our data loader, move the train.txt and test.txt files from the image dir
 │   ├── Images    
 │   ├── splits  
 │   ├── TestLabels
-│   ├── TrainLabels
+│   └── TrainLabels
 
 ### Requirements 
 
