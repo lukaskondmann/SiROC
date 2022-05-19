@@ -19,6 +19,13 @@ on four datasets. Besides accurate predictions without the need for training, Si
 
 Get the OSCD dataset from [IEEE Dataport](https://ieee-dataport.org/open-access/oscd-onera-satellite-change-detection). 
 Unfortunately, we do not have permission to share the three smaller datasets involved in the paper as we do not own them. 
+To use our data loader, move the train.txt and test.txt files from the image directory into a separate folder "splits" in the main folder of the dataset. In the end, your structure should look like this:
+
+├── Onera Dataset                   
+│   ├── Images    
+│   ├── splits  
+│   ├── TestLabels
+│   ├── TrainLabels
 
 ### Requirements 
 
